@@ -1,0 +1,11 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="PageImporter" verbose="1" parallel="false">
+    <test name="PageImporterTests" preserve-order="true">
+        <classes>
+            <class name="org.jahia.modules.pageimporter.tests.projectmanagement.tests.ImportTest"/>
+            <class name="org.jahia.modules.pageimporter.tests.projectmanagement.tests.DeleteProjectTest"/>
+            <class name="org.jahia.modules.pageimporter.tests.projectmanagement.tests.EditProjectTest"/>
+        </classes>
+    </test>
+</suite>
