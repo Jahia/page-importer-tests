@@ -1,5 +1,6 @@
 package org.jahia.modules.pageimporter.tests;
 
+import org.apache.commons.io.FileUtils;
 import org.jahia.modules.tests.core.ModuleTest;
 import org.jahia.modules.tests.utils.CustomExpectedConditions;
 import org.openqa.selenium.By;
@@ -11,6 +12,7 @@ import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -201,5 +203,26 @@ public class PageImporterRepository extends ModuleTest {
         isProjectDeleted = waitForElementToBeInvisible(proectToDelete);
 
         return isProjectDeleted;
+    }
+
+    protected void cleanDownloadsFolder() {
+        String downloadsFolderPath = new File(getDownloadsFolder()).getAbsolutePath();
+
+        try {
+            FileUtils.cleanDirectory(new File(downloadsFolderPath));
+        } catch (IOException e) {
+            getLogger().error(e.getMessage());
+        } catch (IllegalArgumentException ee){
+            getLogger().error(ee.getMessage());
+        }
+    }
+
+    /**
+     * AfterClass method, deletes all projects, clean Downloads folder.
+     */
+    protected void customTestCleanUp(){
+        goToProjectsList("en");
+        deleteAllProjects();
+        cleanDownloadsFolder();
     }
 }
