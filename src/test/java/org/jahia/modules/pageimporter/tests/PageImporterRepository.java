@@ -1,15 +1,18 @@
 package org.jahia.modules.pageimporter.tests;
 
 import org.apache.commons.io.FileUtils;
+import org.jahia.modules.pageimporter.tests.businessobjects.Area;
 import org.jahia.modules.tests.core.ModuleTest;
 import org.jahia.modules.tests.utils.CustomExpectedConditions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.testng.Assert;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
+import org.testng.asserts.SoftAssert;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,6 +24,8 @@ import java.util.Random;
  * Created by sergey on 2016-08-30.
  */
 public class PageImporterRepository extends ModuleTest {
+    protected static final String SELECTED_AREA_MARK = "AreaSelection";
+
     @BeforeSuite()
     protected void createSite() {
         // Creates site with form factory module
@@ -203,6 +208,184 @@ public class PageImporterRepository extends ModuleTest {
         isProjectDeleted = waitForElementToBeInvisible(proectToDelete);
 
         return isProjectDeleted;
+    }
+
+    protected void switchToProjectFrame(){
+        createWaitDriver(10, 300).until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.xpath("//iframe[@id='tiProjectFrame']")));
+    }
+
+    protected void switchToDefaultContent(){
+        getDriver().switchTo().defaultContent();
+    }
+
+    /**
+     * Click on 'Open Project' button and select page for base template
+     * @param projectName String, name of the project
+     * @param baseTemplatePageName String, filename of desired page. Example: Index.html
+     */
+    protected void openProjectFirstTime(String  projectName,
+                                        String  baseTemplatePageName){
+        WebElement editProjectBtn = findByXpath("//md-card-title-text[contains(., '"+projectName+"')]/ancestor::md-card//button[@ng-click='projects.seeProject($index)']");
+
+        clickOn(editProjectBtn);
+        WebElement importBtn = findByXpath("//button[@ng-click='sbpc.submit()']");
+        WebElement baseTemplateSelector = findByXpath("//md-select[@ng-model='sbpc.selectedPage']");
+        waitForElementToStopMoving(baseTemplateSelector);
+        clickOn(baseTemplateSelector);
+        WebElement baseTemplateOption = findByXpath("//md-option[contains(., '"+baseTemplatePageName+"')]");
+        waitForElementToBeEnabled(baseTemplateOption, 3);
+        waitForElementToStopMoving(baseTemplateOption);
+        clickOn(baseTemplateOption);
+        waitForElementToBeEnabled(importBtn, 7);
+        clickOn(importBtn);
+        waitForElementToBeInvisible(importBtn);
+        waitForGlobalSpinner(2, 45);
+        switchToProjectFrame();
+        WebElement body = findByXpath("//body");
+        waitForElementToStopMoving(body);
+        switchToDefaultContent();
+    }
+
+    /**
+     * Select an area. If  ancestor selector does not work, make sure you have at least 1 area on template (at least 1 area is expanded on home or wherever)
+     * @param areaName String, name of new area
+     * @param xPath, String, xPath to click on to create new area
+     * @param xOffset, int, Horizontal offsen in pixels, from top left corner of element. Pass 0 to click in the middle
+     * @param yOffset int, Vertical offsen in pixels, from top left corner of element. Pass 0 to click in the middle
+     * @param ancestorPageAreaName String, name of the area on ancestor page to inherit. Pass empty string to avoid feature usage.
+     * @param assignHtml True to assign selected html, node type and property to the area
+     * @param nodeType String, node type to assign to the area
+     * @param propertyType String, propetry type, pass empty string to avoid feature usage
+     */
+    protected void selectArea(String    areaName,
+                              String    xPath,
+                              int       xOffset,
+                              int       yOffset,
+                              String    ancestorPageAreaName,
+                              boolean   assignHtml,
+                              String    nodeType,
+                              String    propertyType){
+        rightMouseClick(xPath, xOffset, yOffset);
+        WebElement areaNameField = findByXpath("//input[@name='areaName']");
+        WebElement okButton = findByXpath("//button[@ng-click='hdc.area.ok()']");
+        WebElement ancestorSelector = findByXpath("//md-select[@ng-model='hdc.area.areaName']");
+        WebElement assignToPropertyCheckboxToCheck = findByXpath("//md-checkbox");
+        WebElement assignToPropertyCheckboxToClick = findByXpath("//md-checkbox//div[@class='md-label']");
+        waitForElementToStopMoving(areaNameField);
+        //Defining area name
+        if(ancestorPageAreaName.isEmpty()){
+            typeInto(areaNameField, areaName);
+        }else {
+            clickOn(ancestorSelector);
+            WebElement option = findByXpath("//md-option/div[text()='"+ancestorPageAreaName+"']");
+            waitForElementToStopMoving(option);
+            clickOn(option);
+            waitForElementToBeInvisible(option);
+        }
+
+        if(assignHtml){
+            //Ensure checkbox is on
+            if (!assignToPropertyCheckboxToCheck.getAttribute("aria-checked").equals("true")){
+                waitForElementToStopMoving(assignToPropertyCheckboxToClick);
+                clickOn(assignToPropertyCheckboxToClick);
+            }
+            if(!nodeType.isEmpty()){
+                WebElement nodeTypeField = findByID("nodeTypeSelection-typeahead-input");
+                typeInto(nodeTypeField, nodeType);
+                WebElement nodeTypeOption = findByXpath("//div[contains(text(), '"+nodeType+"')]");
+                waitForElementToStopMoving(nodeTypeOption);
+                clickOn(nodeTypeOption);
+                waitForElementToBeInvisible(nodeTypeOption);
+                if (!propertyType.isEmpty()) {
+                    WebElement propertyTypeSelector = findByXpath("//md-select[@ng-model='hdc.area.selectedPropertyForHtml.propertyName']");
+                    clickOn(propertyTypeSelector);
+                    WebElement propertyTypeOption = findByXpath("//md-option/div[contains(text(), '" + propertyType + "')]");
+                    waitForElementToStopMoving(propertyTypeOption);
+                    clickOn(propertyTypeOption);
+                    waitForElementToBeInvisible(propertyTypeOption);
+                }
+            }
+        }
+
+        waitForElementToBeEnabled(okButton, 5);
+        clickOn(okButton);
+        waitForElementToBeInvisible(okButton);
+
+        Assert.assertTrue(
+                checkIfAreaSelected(xPath),
+                "Area was not selected. Target element does not have '"+SELECTED_AREA_MARK+"' class." + " XPath: "+xPath);
+    }
+
+    protected void selectArea(Area area){
+        selectArea(
+                area.getName(),
+                area.getXpath(),
+                area.getxOffset(),
+                area.getyOffset(),
+                area.getAncestorPageAreaName(),
+                area.isHtmlAssigned(),
+                area.getNodeType(),
+                area.getPropertyType()
+        );
+    }
+
+    /**
+     * Check if area is selected (has AreaSelection class)
+     * @param xPath String, XPath to the area
+     * @param softAssert Instance of SoftAssert you are working with. Will fail if visibility result is not expected.
+     * @param expectedResult boolean, your expectation if area should be selected.
+     * @param errorMsg String, error massage that will be prepended to assert's error message
+     * @return True if area selected, otherwise false
+     */
+    protected boolean checkIfAreaSelected(String        xPath,
+                                          SoftAssert    softAssert,
+                                          boolean       expectedResult,
+                                          String        errorMsg) {
+        switchToProjectFrame();
+        WebElement area = findByXpath(xPath);
+        softAssert.assertNotNull(area, errorMsg+". Cannot find an element that you are trying to check if selected as area. XPath: '" + xPath + "'.");
+
+        boolean isAreaSelected = area.getAttribute("class").contains(SELECTED_AREA_MARK);
+        switchToDefaultContent();
+        softAssert.assertEquals(
+                isAreaSelected,
+                expectedResult,
+                errorMsg+". Assertion if element: '" + xPath + "' has class '" + SELECTED_AREA_MARK + "' (is selected) Failed");
+        return isAreaSelected;
+    }
+
+    /**
+     * Check if area is selected (has ViewSelection class)
+     * @param xPath String, XPath to the area
+     * @return True if area selected, otherwise false
+     */
+    protected boolean checkIfAreaSelected(String xPath){
+        return checkIfAreaSelected(xPath, new SoftAssert(), false, "");
+    }
+
+    /**
+     * Performs right click on element with given xPath and offsets. Will do all the iFrame switching for you.
+     * @param xPath String, xPath to your target element
+     * @param xOffset int, Horizontal offset in pixels, from the <u>left</u> border of element.
+     *                Pass negative value to move left. Pass 0 to use calculated center of the element (Default click behaviour).
+     * @param yOffset int, Vertical offset in pixels, from the <u>top</u> border of element.
+     *                Pass negative value to move left. Pass 0 to use calculated center of the element (Default click behaviour).
+     */
+    protected void rightMouseClick(String   xPath,
+                                   int      xOffset,
+                                   int      yOffset){
+        switchToProjectFrame();
+        WebElement area = findByXpath(xPath);
+        Assert.assertNotNull(area, "Cannot find an element that you are trying to right click on. XPath: '"+xPath+"'.");
+
+        if(xOffset == 0){
+            xOffset = area.getSize().getWidth()/2;
+        }
+        if(yOffset == 0){
+            yOffset =  area.getSize().getHeight()/2;
+        }
+        new Actions(getDriver()).moveToElement(area, xOffset, yOffset).contextClick().build().perform();
+        switchToDefaultContent();
     }
 
     protected void cleanDownloadsFolder() {
