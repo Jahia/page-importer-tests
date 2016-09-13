@@ -29,7 +29,7 @@ public class PageImporterRepository extends ModuleTest {
     @BeforeSuite()
     protected void createSite() {
         // Creates site with form factory module
-        initWithGroovyFile("createSite.groovy");
+        initWithGroovyFile("createSiteWithAreas.groovy");
     }
 
     @AfterSuite()
