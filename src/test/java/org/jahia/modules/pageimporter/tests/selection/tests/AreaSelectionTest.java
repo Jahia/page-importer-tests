@@ -3,6 +3,8 @@ package org.jahia.modules.pageimporter.tests.selection.tests;
 import org.jahia.modules.pageimporter.tests.PageImporterRepository;
 import org.jahia.modules.pageimporter.tests.businessobjects.Area;
 import org.jahia.modules.tests.utils.SoftAssertWithScreenshot;
+import org.openqa.selenium.WebElement;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 import org.testng.asserts.SoftAssert;
 
@@ -43,5 +45,57 @@ public class AreaSelectionTest extends PageImporterRepository {
         checkIfAreaSelected(areaTwo.getXpath(), softAssert, true, "");
 
         softAssert.assertAll();
+    }
+
+    @Test
+    public void clearSelectionsTest() {
+        SoftAssert softAssert = new SoftAssertWithScreenshot(getDriver(), "AreaSelectionTest.clearSelectionsTest");
+        String projectName = randomWord(8);
+        Area areaTwo = new Area(randomWord(5), "//body/div[2]", 1, 0, "", false, "", "");
+
+        importProject("en", projectName, "", "AlexLevels.zip");
+        openProjectFirstTime(projectName, "index.html");
+        selectArea(areaTwo);
+        clearSelections();
+        checkIfAreaSelected(areaTwo.getXpath(), softAssert, false, "Clear selections was clicked.");
+
+        softAssert.assertAll();
+    }
+
+    @Test
+    public void selectionRemovalTest() {
+        SoftAssert softAssert = new SoftAssertWithScreenshot(getDriver(), "AreaSelectionTest.selectionRemovalTest");
+        String projectName = randomWord(8);
+        Area areaTwo = new Area(randomWord(5), "//body/div[2]", 1, 0, "", false, "", "");
+
+        importProject("en", projectName, "", "AlexLevels.zip");
+        openProjectFirstTime(projectName, "index.html");
+        selectArea(areaTwo);
+        removeArea(areaTwo, "Removing area");
+
+        softAssert.assertAll();
+    }
+
+    protected void clearSelections(){
+        WebElement clearBtn = findByXpath("//button[@ng-click='pc.clearSelections($event)']");
+        clickOn(clearBtn);
+        WebElement yesClearBtn = findByXpath("//button[@ng-click='csc.submit()']");
+        waitForElementToStopMoving(yesClearBtn);
+        clickOn(yesClearBtn);
+        waitForElementToBeInvisible(yesClearBtn);
+    }
+
+    protected void removeArea(Area area, String errorMsg){
+        boolean isSelected = checkIfAreaSelected(area.getXpath(), new SoftAssert(), true, "");
+
+        Assert.assertTrue(isSelected, errorMsg+". Area that you are trying to remove is not selected.");
+        rightMouseClick(area.getXpath(), area.getxOffset(), area.getyOffset());
+        WebElement removeBtn = findByXpath("//button[@ng-click='hdc.area.remove()']");
+        waitForElementToStopMoving(removeBtn);
+        clickOn(removeBtn);
+        waitForElementToBeInvisible(removeBtn);
+        Assert.assertFalse(
+                checkIfAreaSelected(area.getXpath()),
+                errorMsg+". Area was not removed. XPath:'"+area.getXpath()+"'. Horizontal offset:"+area.getxOffset()+", Vertical offset:"+area.getyOffset());
     }
 }
