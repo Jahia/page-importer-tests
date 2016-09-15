@@ -4,10 +4,7 @@ import org.apache.commons.io.FileUtils;
 import org.jahia.modules.pageimporter.tests.businessobjects.Area;
 import org.jahia.modules.tests.core.ModuleTest;
 import org.jahia.modules.tests.utils.CustomExpectedConditions;
-import org.openqa.selenium.By;
-import org.openqa.selenium.StaleElementReferenceException;
-import org.openqa.selenium.TimeoutException;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.testng.Assert;
@@ -17,16 +14,15 @@ import org.testng.asserts.SoftAssert;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Created by sergey on 2016-08-30.
  */
 public class PageImporterRepository extends ModuleTest {
     protected static final String SELECTED_AREA_MARK = "AreaSelection";
+    protected static final String AREA_BORDER_TYPE_KEY = "borderType";
+    protected static final String AREA_BORDER_COLOR_KEY = "borderColor";
 
     @BeforeSuite()
     protected void createSite() {
@@ -248,6 +244,17 @@ public class PageImporterRepository extends ModuleTest {
         switchToDefaultContent();
     }
 
+    protected void openProject(String   projectName){
+        WebElement editProjectBtn = findByXpath("//md-card-title-text[contains(., '"+projectName+"')]/ancestor::md-card//button[@ng-click='projects.seeProject($index)']");
+
+        clickOn(editProjectBtn);
+        waitForGlobalSpinner(2, 45);
+        switchToProjectFrame();
+        WebElement body = findByXpath("//body");
+        waitForElementToStopMoving(body);
+        switchToDefaultContent();
+    }
+
     /**
      * Select an area. If  ancestor selector does not work, make sure you have at least 1 area on template (at least 1 area is expanded on home or wherever)
      * @param areaName String, name of new area
@@ -388,6 +395,97 @@ public class PageImporterRepository extends ModuleTest {
         }
         new Actions(getDriver()).moveToElement(area, xOffset, yOffset).contextClick().build().perform();
         switchToDefaultContent();
+    }
+
+    protected String generateRGB(){
+        int r = randInt(0, 255);
+        int g = randInt(0, 255);
+        int b = randInt(0, 255);
+        String opacity = "0."+randInt(1, 9);
+
+        if(getBrowser().equals(CHROME)){
+            return "rgb("+r+", "+g+", "+b+")";
+        }else{
+            return "rgba("+r+", "+g+", "+b+", "+opacity+")";
+        }
+    }
+
+    protected static int randInt(int min, int max) {
+        Random rand = new Random();
+
+        int randomNum = rand.nextInt((max - min) + 1) + min;
+        return randomNum;
+    }
+
+    protected void mouseOver(String xPathToElement){
+        switchToProjectFrame();
+        WebElement el = findByXpath(xPathToElement);
+        new Actions(getDriver()).moveToElement(el).build().perform();
+        switchToDefaultContent();
+    }
+
+    protected Map<String, Map<String, String>> getBorderColors(Area[] areas){
+        Map<String, Map<String, String>> map = new HashMap<String, Map<String, String>>();
+
+        switchToProjectFrame();
+        for(Area area:areas){
+            WebElement selection = findByXpath(area.getXpath());
+            Map<String, String> borderTypeAndColor = new HashMap<String, String>();
+
+            if(getBrowser().equals(CHROME)) {
+                String[] borderCssAttributes = selection.getCssValue("border").split(" ", 3);
+                borderTypeAndColor.put(AREA_BORDER_TYPE_KEY, borderCssAttributes[1]);
+                borderTypeAndColor.put(AREA_BORDER_COLOR_KEY, borderCssAttributes[2]);
+
+            }else{
+                borderTypeAndColor.put(AREA_BORDER_TYPE_KEY, selection.getCssValue("border-bottom-style"));
+                borderTypeAndColor.put(AREA_BORDER_COLOR_KEY, selection.getCssValue("border-bottom-color"));
+            }
+            map.put(area.getName(), borderTypeAndColor);
+        }
+        switchToDefaultContent();
+
+        return map;
+    }
+
+    protected Map<String, String> changeColors(Area area){
+        Map<String, String> newColors = new HashMap<String, String>();
+        String newColor = generateRGB();
+
+        WebElement adjustColorsBtn = findByXpath("//button[@ng-click='pc.setUpColors($event)']");
+        clickOn(adjustColorsBtn);
+        WebElement applyBtn = findByXpath("//button[@ng-click='sdoc.apply()']");
+        waitForElementToStopMoving(applyBtn);
+
+
+        WebElement changerBtn = findByXpath("//md-dialog-content//div[contains(., 'Area')]/span[@ng-model='type.color']");
+        WebElement colorInput = findByXpath("//input[@class='sp-input']");
+        WebElement chooseBtn = findByXpath("//button[@class='sp-choose']");
+
+
+        clickOn(changerBtn);
+
+        for (int i = 0; i < 20; i++) {
+            colorInput.sendKeys(Keys.BACK_SPACE);
+        }
+        colorInput.sendKeys(newColor);
+        colorInput.sendKeys(Keys.ENTER);
+
+        waitForElementToBeEnabled(chooseBtn, 3);
+        clickOn(chooseBtn);
+        waitForElementToBeInvisible(chooseBtn);
+        newColors.put(area.getName(), newColor);
+
+
+        applyBtn = findByXpath("//button[@ng-click='sdoc.apply()']");
+        clickOn(applyBtn);
+        waitForElementToBeInvisible(applyBtn);
+        switchToProjectFrame();
+        WebElement body = findByXpath("//body");
+        waitForElementToStopMoving(body);
+        switchToDefaultContent();
+
+        return newColors;
     }
 
     /**
