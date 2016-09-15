@@ -5,6 +5,7 @@ import org.jahia.modules.pageimporter.tests.businessobjects.Area;
 import org.jahia.modules.tests.core.ModuleTest;
 import org.jahia.modules.tests.utils.CustomExpectedConditions;
 import org.openqa.selenium.By;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
@@ -16,6 +17,7 @@ import org.testng.asserts.SoftAssert;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -386,6 +388,22 @@ public class PageImporterRepository extends ModuleTest {
         }
         new Actions(getDriver()).moveToElement(area, xOffset, yOffset).contextClick().build().perform();
         switchToDefaultContent();
+    }
+
+    /**
+     * Click on field, clear it and type text into it.
+     * @param field WebElement, filed to send keys into it
+     * @param text String, text to send into input field
+     */
+    protected void typeIntoSlowly(WebElement  field,
+                                  String      text){
+        char[] textAsArray = text.toCharArray();
+        clickOn(field);
+        field.clear();
+
+        for (int i = 0; i < textAsArray.length; i++){
+            field.sendKeys(textAsArray[i]+"");
+        }
     }
 
     protected void cleanDownloadsFolder() {
