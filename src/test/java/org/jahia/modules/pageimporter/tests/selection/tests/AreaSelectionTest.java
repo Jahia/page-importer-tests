@@ -34,7 +34,7 @@ public class AreaSelectionTest extends PageImporterRepository {
     public void inheritAreaTest() {
         SoftAssert softAssert = new SoftAssertWithScreenshot(getDriver(), "AreaSelectionTest.inheritAreaTest");
         String projectName = randomWord(8);
-        Area area = new Area(randomWord(5), "//body/div[1]", 1, 0, "pagecontent-side", true, "jnt:bigText", "text");
+        Area area = new Area(randomWord(5), "//body/div[1]", 1, 0, "pagecontent-side2", true, "jnt:bigText", "text");
         Area areaTwo = new Area(randomWord(5), "//body/div[2]", 1, 0, "pagecontent", false, "", "");
 
         importProject("en", projectName, "", "AlexLevels.zip");
