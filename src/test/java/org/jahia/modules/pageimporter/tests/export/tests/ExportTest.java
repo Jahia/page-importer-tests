@@ -26,7 +26,7 @@ public class ExportTest extends PageImporterRepository{
         selectArea(area);
         selectArea(areaTwo);
         exportSeletions(newPageName, parentPageName);
-        checkIfNewPageCreated(newPageName, true);
+        checkIfNewPageCreated(newPageName, true, new String[]{parentPageName});
     }
 
     @Test
@@ -43,45 +43,80 @@ public class ExportTest extends PageImporterRepository{
         selectArea(area);
         selectArea(areaTwo);
         exportSeletions(newPageName, parentPageName);
-        exportSeletions(anotherNewPageName, newPageName);
-        checkIfNewPageCreated(newPageName, true);
-        checkIfNewPageCreated(anotherNewPageName, true);
+        exportSelectionsUnderSecondLevel(anotherNewPageName, newPageName);
+        checkIfNewPageCreated(newPageName, true, new String[]{parentPageName});
+        checkIfNewPageCreated(anotherNewPageName, true, new String[]{parentPageName, newPageName});
     }
 
     protected void checkIfNewPageCreated(String     pageNameToLookFor,
-                                         boolean    expectedResult){
-        WebElement exportBtn = findByXpath("//button[@ng-click='pc.copySelections()']");
-        clickOn(exportBtn);
-        WebElement parentpageField = findByName("path");
-        WebElement closeBtn = findByXpath("//button[@ng-click='csc.cancel()']");
+                                         boolean    expectedResult,
+                                         String[]   ancestorNames){
+        String urlBase = getBaseURL()+"/cms/render/default/en/sites/"+getSiteName()+"/";
+        for (String ancestor:ancestorNames){
+            urlBase = urlBase+ancestor.toLowerCase()+"/";
+        }
+        String urlToPageToCheck = urlBase+pageNameToLookFor+".content-template.html";
 
-        waitForElementToStopMoving(parentpageField);
-        typeIntoSlowly(parentpageField, pageNameToLookFor);
-        Assert.assertEquals(
-                isVisible(By.xpath("//div[@ng-click='tc.select(item)' and normalize-space(text())='"+pageNameToLookFor+"']"), 3),
+        getDriver().get(urlToPageToCheck);
+        Assert.assertNotEquals(
+                isVisible(By.xpath("//h1[contains(., 'not found')]"), 3),
                 expectedResult,
-                pageNameToLookFor+" - Page is not visible in the parent page selector after export."
+                pageNameToLookFor+" not found. 404 page is shown instead."
         );
-        clickOn(closeBtn);
-        waitForElementToBeInvisible(closeBtn);
     }
 
+    protected void exportSelectionsUnderSecondLevel(String   newPAgeName,
+                                                   String   parentLevelOnePageName){
+        String xPathToSuccessfulToast = "//div[contains(@class, 'toast-title')][contains(., 'Export successful!')]";
+        WebElement exportBtn = findByXpath("//button[@ng-click='pc.copySelections()']");
+        clickOn(exportBtn);
+        WebElement newPageNameField = findByName("newPageName");
+        WebElement exportAreaSelectionsBtn = findByXpath("//button[@ng-click='csc.copySelections()']");
+        WebElement grandParentExpander = findByXpath("//i[@ng-click='npc.toggle(item)' and ../span[@ng-click='npc.select(item)' and contains(., 'Home')]]");
+
+        waitForElementToStopMoving(newPageNameField);
+        typeInto(newPageNameField, newPAgeName);
+        clickOn(grandParentExpander);
+        WebElement parentPage = findByXpath("//span[@ng-click='npc.select(item)' and contains(., '"+parentLevelOnePageName+"')]");
+        clickOn(parentPage);
+        Assert.assertTrue(
+                parentPage.getAttribute("class").contains("selected"),
+                "Parent page with name "+parentLevelOnePageName+" is not selected after click."
+        );
+        waitForElementToBeEnabled(exportAreaSelectionsBtn, 3);
+        clickOn(exportAreaSelectionsBtn);
+        Long start = new Date().getTime();
+        waitForGlobalSpinner(2, 50);
+        Long finish = new Date().getTime();
+        waitForElementToBeInvisible(exportAreaSelectionsBtn);
+        Assert.assertTrue(
+                isVisible(By.xpath(xPathToSuccessfulToast), 2),
+                "Success toast not found after selections export. " +
+                        "Global spinner was visible for at least "+(finish-start)+" milliseconds. (Maximum is 50000)");
+        clickOn(By.xpath(xPathToSuccessfulToast));
+
+    }
+    /**
+     * Exports selections to top - level page.
+     * @param newPAgeName Name of the new page
+     * @param parentPageName Top - level page name, that will be selected as parent for new page.
+     */
     protected void exportSeletions(String   newPAgeName,
                                    String   parentPageName){
         String xPathToSuccessfulToast = "//div[contains(@class, 'toast-title')][contains(., 'Export successful!')]";
         WebElement exportBtn = findByXpath("//button[@ng-click='pc.copySelections()']");
         clickOn(exportBtn);
         WebElement newPageNameField = findByName("newPageName");
-        WebElement parentpageField = findByName("path");
         WebElement exportAreaSelectionsBtn = findByXpath("//button[@ng-click='csc.copySelections()']");
+        WebElement parentPage = findByXpath("//span[@ng-click='npc.select(item)' and contains(., '"+parentPageName+"')]");
 
         waitForElementToStopMoving(newPageNameField);
         typeInto(newPageNameField, newPAgeName);
-        typeIntoSlowly(parentpageField, parentPageName);
-        WebElement parentPageOption = findByXpath("//div[@ng-click='tc.select(item)' and normalize-space(text())='"+parentPageName+"']");
-        waitForElementToStopMoving(parentPageOption);
-        clickOn(parentPageOption);
-        waitForElementToBeInvisible(parentPageOption);
+        clickOn(parentPage);
+        Assert.assertTrue(
+                parentPage.getAttribute("class").contains("selected"),
+                "Parent page with name "+parentPageName+" is not selected after click."
+        );
         waitForElementToBeEnabled(exportAreaSelectionsBtn, 3);
         clickOn(exportAreaSelectionsBtn);
         Long start = new Date().getTime();

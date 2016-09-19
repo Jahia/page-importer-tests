@@ -79,7 +79,7 @@ public class AreaSelectionTest extends PageImporterRepository {
     protected void clearSelections(){
         WebElement clearBtn = findByXpath("//button[@ng-click='pc.clearSelections($event)']");
         clickOn(clearBtn);
-        WebElement yesClearBtn = findByXpath("//button[@ng-click='csc.submit()']");
+        WebElement yesClearBtn = findByXpath("//button[@ng-click='dialog.hide()']");
         waitForElementToStopMoving(yesClearBtn);
         clickOn(yesClearBtn);
         waitForElementToBeInvisible(yesClearBtn);
