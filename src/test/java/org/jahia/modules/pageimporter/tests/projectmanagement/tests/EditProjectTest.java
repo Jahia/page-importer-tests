@@ -4,7 +4,10 @@ import org.jahia.modules.pageimporter.tests.PageImporterRepository;
 import org.jahia.modules.tests.utils.CustomExpectedConditions;
 import org.jahia.modules.tests.utils.SoftAssertWithScreenshot;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
+import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -272,7 +275,16 @@ public class EditProjectTest extends PageImporterRepository {
      */
     private void clickSelectUnselectAll(){
         WebElement selectAllCheckbox = findByXpath("//md-checkbox[@aria-label='Select all']");
-        clickOn(selectAllCheckbox);
+//        new Actions(getDriver()).
+        try {
+            clickOn(selectAllCheckbox);
+        }catch (WebDriverException e){
+            while(!selectAllCheckbox.getAttribute("aria-checked").contains("true")) {
+                try {
+                    new Actions(getDriver()).sendKeys(Keys.ARROW_UP).click(selectAllCheckbox).build().perform();
+                }catch (WebDriverException ee){}
+            }
+        }
     }
 
     /**
@@ -285,7 +297,15 @@ public class EditProjectTest extends PageImporterRepository {
         boolean isSelected = isProjectSelected(projectName);
 
         if (!isSelected){
-            clickOn(checkbox);
+            try {
+                clickOn(checkbox);
+            }catch (WebDriverException e){
+                while(!checkbox.getAttribute("aria-checked").contains("true")) {
+                    try {
+                        new Actions(getDriver()).sendKeys(Keys.ARROW_UP).click(checkbox).build().perform();
+                    }catch (WebDriverException ee){}
+                }
+            }
             checkbox = findByXpath("//md-card-title-text[contains(., '"+projectName+"')]/ancestor::md-card//md-checkbox");
             isSelected = checkbox.getAttribute("aria-checked").contains("true");
         }
@@ -302,7 +322,15 @@ public class EditProjectTest extends PageImporterRepository {
         boolean isSelected = isProjectSelected(projectName);
 
         if (isSelected){
+            try{
             clickOn(checkbox);
+            }catch (WebDriverException e){
+                while(checkbox.getAttribute("aria-checked").contains("true")) {
+                    try {
+                        new Actions(getDriver()).sendKeys(Keys.ARROW_UP).click(checkbox).build().perform();
+                    }catch(WebDriverException ee){}
+                }
+            }
             checkbox = findByXpath("//md-card-title-text[contains(., '"+projectName+"')]/ancestor::md-card//md-checkbox");
             isSelected = checkbox.getAttribute("aria-checked").contains("true");
         }
