@@ -9,6 +9,7 @@
             <class name="org.jahia.modules.pageimporter.tests.selection.tests.AreaSelectionTest"/>
             <class name="org.jahia.modules.pageimporter.tests.selection.tests.AreaColorTest"/>
             <class name="org.jahia.modules.pageimporter.tests.selection.tests.ProjectSavingTest"/>
+            <class name="org.jahia.modules.pageimporter.tests.selection.tests.SelectorConfigurationTest"/>
             <class name="org.jahia.modules.pageimporter.tests.export.tests.ExportTest"/>
         </classes>
     </test>

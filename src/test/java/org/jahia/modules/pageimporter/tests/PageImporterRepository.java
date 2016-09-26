@@ -239,8 +239,8 @@ public class PageImporterRepository extends ModuleTest {
         waitForElementToBeInvisible(importBtn);
         waitForGlobalSpinner(2, 45);
         switchToProjectFrame();
-        WebElement body = findByXpath("//body");
-        waitForElementToStopMoving(body);
+//        WebElement body = findByTagName("body");
+//        waitForElementToStopMoving(body);
         switchToDefaultContent();
     }
 
@@ -486,6 +486,15 @@ public class PageImporterRepository extends ModuleTest {
         switchToDefaultContent();
 
         return newColors;
+    }
+
+    protected void clearSelections(){
+        WebElement clearBtn = findByXpath("//button[@ng-click='pc.clearSelections($event)']");
+        clickOn(clearBtn);
+        WebElement yesClearBtn = findByXpath("//button[@ng-click='dialog.hide()']");
+        waitForElementToStopMoving(yesClearBtn);
+        clickOn(yesClearBtn);
+        waitForElementToBeInvisible(yesClearBtn);
     }
 
     /**

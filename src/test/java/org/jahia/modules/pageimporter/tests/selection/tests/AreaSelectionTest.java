@@ -76,15 +76,6 @@ public class AreaSelectionTest extends PageImporterRepository {
         softAssert.assertAll();
     }
 
-    protected void clearSelections(){
-        WebElement clearBtn = findByXpath("//button[@ng-click='pc.clearSelections($event)']");
-        clickOn(clearBtn);
-        WebElement yesClearBtn = findByXpath("//button[@ng-click='dialog.hide()']");
-        waitForElementToStopMoving(yesClearBtn);
-        clickOn(yesClearBtn);
-        waitForElementToBeInvisible(yesClearBtn);
-    }
-
     protected void removeArea(Area area, String errorMsg){
         boolean isSelected = checkIfAreaSelected(area.getXpath(), new SoftAssert(), true, "");
 
