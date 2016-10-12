@@ -28,7 +28,7 @@ public class EditProjectTest extends PageImporterRepository {
      * @param modifiedName String, new project name
      * @param modifiedDescription String, new project description
      */
-    @Test(dataProvider = "projectDetails", enabled = false)
+    @Test(dataProvider = "projectDetails")
     public void editProjectDescription(boolean isValidName, boolean isValidDescription, String modifiedName, String modifiedDescription) {
         String originalName = randomWord(9);
         String originalDescription = randomWord(15);
@@ -40,12 +40,12 @@ public class EditProjectTest extends PageImporterRepository {
 
         WebElement projectNameField = findByXpath("//input[@name='projectName']");
         WebElement projectDescriptionField = findByXpath("//textarea[@ng-model='project.description']");
-        WebElement saveChangesBtn = findByXpath("//button[@aria-label='Save Changes']");
 
         typeInto(projectNameField, modifiedName);
         typeInto(projectDescriptionField, modifiedDescription);
         boolean doesUIShowNameError = projectNameField.getAttribute("class").contains("ng-invalid-");
         boolean doesUIShowDescriptionError = projectDescriptionField.getAttribute("class").contains("ng-invalid-");
+        WebElement saveChangesBtn = findByXpath("//button[@ng-click='edit()']");
 
         if (isValidName) {
             if (isValidDescription) {
@@ -60,12 +60,12 @@ public class EditProjectTest extends PageImporterRepository {
                 clickOn(saveChangesBtn);
                 waitForElementToBeInvisible(saveChangesBtn, 7);
                 softAssert.assertEquals(
-                        isVisible(By.xpath("//md-card-title-text/span[contains(text(), '" + modifiedName + "')]"), 7),
+                        isVisible(By.xpath("//md-card-title-text/span[contains(., '" + modifiedName + "')]"), 7),
                         true,
                         "New project name is not visible after editing project. New name.: " + modifiedName + " Old name.:" + originalName +
                                 ". New Desc.:"+modifiedDescription+". Old Desc.:"+originalDescription);
                 softAssert.assertEquals(
-                        isVisible(By.xpath("//md-card-title-text/span[contains(text(), '" + originalName + "')]"), 1),
+                        isVisible(By.xpath("//md-card-title-text/span[contains(., '" + originalName + "')]"), 1),
                         false,
                         "Old project name is still visible after editing project. New name.: " + modifiedName + " Old name.:" + originalName +
                                 ". New Desc.:"+modifiedDescription+". Old Desc.:"+originalDescription);
@@ -127,225 +127,16 @@ public class EditProjectTest extends PageImporterRepository {
         waitForElementToBeInvisible(cancelButton, 7);
 
         softAssert.assertEquals(
-                isVisible(By.xpath("//md-card-title-text/span[contains(text(), '" + originalName + "')]"), 7),
+                isVisible(By.xpath("//md-card-title-text/span[contains(., '" + originalName + "')]"), 7),
                 true,
                 "Cannot find project with original name after cancelling renaming. New name.: " + originalName + " Old name.:" + modifiedName);
         softAssert.assertEquals(
-                isVisible(By.xpath("//md-card-title-text/span[contains(text(), '" + modifiedName + "')]"), 1),
+                isVisible(By.xpath("//md-card-title-text/span[contains(., '" + modifiedName + "')]"), 1),
                 false,
                 "Project with modified name is found after cancelling renaming. New name.: " + originalName + " Old name.:" + modifiedName);
         softAssert.assertAll();
     }
 
-    //TI_S1C17
-    @Test
-    public void changeProjectPicture(){
-        String projectName = randomWord(10);
-        String projectDescription = randomWord(22);
-
-        importProject("en", projectName, projectDescription, "AlexLevels.zip");
-        changeProjectPicture(projectName, "JumpingCat.gif");
-        changeProjectPicture(projectName, "FlowerCat.tif");
-        changeProjectPicture(projectName, "RaccoonCat.jpg");
-        changeProjectPicture(projectName, "TransparentBackgroundCat.png");
-    }
-
-    /**
-     * Changes project picture. To use that method you have to be on the projects list page
-     * @param projectName String, project name that you want to change picture for
-     * @param pictureFileName String, picture filename. picture has to be under "src/test/resources/testData/pictures" folder
-     */
-    protected void changeProjectPicture(String projectName, String pictureFileName){
-        Long maxMilliSecondsToWait = 5000L;
-        Long start;
-        String pictureFilePath = new File("src/test/resources/testData/pictures/"+pictureFileName).getAbsolutePath();
-        String jsToEnableInput = "function getElementByXpath(path) {" +
-                "return document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;" +
-                "}" +
-                "fileInput = getElementByXpath(\"//label[input[@type='file']]\");" +
-                "fileInput.setAttribute(\"style\", \"\");";
-
-        WebElement editImageBtn = findByXpath("//md-card-title-text[contains(., '"+projectName+"')]/ancestor::md-card//button[@ng-click='projects.editImage($event, p, $index)']");
-        WebElement projectPictureElement = findByXpath("//md-card-title-text[contains(., '"+projectName+"')]/ancestor::md-card//img[@alt='Project image']");
-        String oldImageLocation = projectPictureElement.getAttribute("src");
-
-        clickOn(editImageBtn);
-        WebElement saveImageBtn = findByXpath("//button[@aria-label='Save image']");
-        WebElement dialogueBox = findByXpath("//div[@class='md-dialog-container ng-scope']");
-        WebElement projectImgFileField = findByXpath("//input[@type='file']");
-
-        createWaitDriver(5, 500).until(CustomExpectedConditions.javascriptWithoutException(jsToEnableInput));
-        projectImgFileField.sendKeys(pictureFilePath);
-        waitForElementToBeEnabled(saveImageBtn, 7);
-        Assert.assertEquals(
-                saveImageBtn.isEnabled(),
-                true,
-                "Cannot save project image, because 'Save image' button disabled");
-        clickOn(saveImageBtn);
-        waitForElementToDisappear(dialogueBox, 7);
-        waitForElementToDisappear(saveImageBtn, 7);
-        waitForGlobalSpinner(1, 45);
-
-        start = new Date().getTime();
-        while (oldImageLocation.equals(
-                findByXpath("//md-card-title-text[contains(., '" + projectName + "')]/ancestor::md-card//img[@alt='Project image']").getAttribute("src"))){
-            try {
-                Thread.sleep(200L);
-            } catch (InterruptedException e) {}
-            if (new Date().getTime() - start >= maxMilliSecondsToWait) {
-                Assert.fail("Changing project picture failed. picture location did not change for "+maxMilliSecondsToWait+" milliseconds and still remain the same:" + oldImageLocation);
-                break;
-            }
-        }
-    }
-
-    @Test
-    public void selectionTest(){
-        SoftAssert softAssert = new SoftAssertWithScreenshot(getDriver(), "EditProjectTest.selectionTest");
-        String projectNameOne = randomWord(8);
-        String projectNameTwo = randomWord(8);
-        String projectNameThree = randomWord(8);
-
-        importProject("en", projectNameOne, "", "AlexLevels.zip");
-        importProject("en", projectNameTwo, "", "AlexLevels.zip");
-        importProject("en", projectNameThree, "", "AlexLevels.zip");
-
-        //None is selected
-        softAssert.assertFalse(
-                isProjectSelected(projectNameOne),
-                "Project is selected by default, we did not select that. Project name: "+projectNameOne);
-        //Select projectOne. Only projectOne is selected
-        softAssert.assertTrue(
-                selectProject(projectNameOne),
-                "Project is not selected after clicking on checkbox. Project name: "+projectNameOne);
-        softAssert.assertFalse(
-                isProjectSelected(projectNameTwo),
-                "Project is selected after clicking on another project's checkbox. Project name: "+projectNameTwo);
-        softAssert.assertFalse(
-                isProjectSelected(projectNameThree),
-                "Project is selected after clicking on another project's checkbox. Project name: "+projectNameThree);
-        //Unselect projectOne, none is selected
-        softAssert.assertFalse(
-                unSelectProject(projectNameOne),
-                "Project is still selected after clicking on checkbox. Project name: "+projectNameOne);
-        softAssert.assertFalse(
-                isProjectSelected(projectNameTwo),
-                "Project is selected after unselecting another project. Project name: "+projectNameTwo);
-        softAssert.assertFalse(
-                isProjectSelected(projectNameThree),
-                "Project is selected after unselecting another project. Project name: "+projectNameThree);
-        //Select all, all selected
-        clickSelectUnselectAll();
-        softAssert.assertTrue(
-                isProjectSelected(projectNameOne),
-                "Project is not selected after clicking 'Select All'. Project name: "+projectNameOne);
-        softAssert.assertTrue(
-                isProjectSelected(projectNameTwo),
-                "Project is not selected after clicking 'Select All'. Project name: "+projectNameTwo);
-        softAssert.assertTrue(
-                isProjectSelected(projectNameThree),
-                "Project is not selected after clicking 'Select All'. Project name: "+projectNameThree);
-        //Unselect projectOne, all but project one is selected
-        softAssert.assertFalse(
-                unSelectProject(projectNameOne),
-                "Project is  selected after unselecting it. Project name: "+projectNameOne);
-        softAssert.assertTrue(
-                isProjectSelected(projectNameTwo),
-                "Project is not selected after unselectiong another project 'Select All'. Project name: "+projectNameTwo);
-        softAssert.assertTrue(
-                isProjectSelected(projectNameThree),
-                "Project is not selected after unselectiong another project. Project name: "+projectNameThree);
-        //Select all again, all projects selected
-        clickSelectUnselectAll();
-        softAssert.assertTrue(
-                isProjectSelected(projectNameOne),
-                "Project is not selected after clicking 'Select All'. Project name: "+projectNameOne);
-        softAssert.assertTrue(
-                isProjectSelected(projectNameTwo),
-                "Project is not selected after clicking 'Select All'. Project name: "+projectNameTwo);
-        softAssert.assertTrue(
-                isProjectSelected(projectNameThree),
-                "Project is not selected after clicking 'Select All'. Project name: "+projectNameThree);
-
-        softAssert.assertAll();
-    }
-
-    /**
-     * Click 'Select All' Or 'Unselect All' checkbox
-     */
-    private void clickSelectUnselectAll(){
-        WebElement selectAllCheckbox = findByXpath("//md-checkbox[@aria-label='Select all']");
-//        new Actions(getDriver()).
-        try {
-            clickOn(selectAllCheckbox);
-        }catch (WebDriverException e){
-            while(!selectAllCheckbox.getAttribute("aria-checked").contains("true")) {
-                try {
-                    new Actions(getDriver()).sendKeys(Keys.ARROW_UP).click(selectAllCheckbox).build().perform();
-                }catch (WebDriverException ee){}
-            }
-        }
-    }
-
-    /**
-     * Select project in projects list, if not already selected
-     * @param projectName String, name of project to select
-     * @return true if project is selected after all
-     */
-    private boolean selectProject(String projectName){
-        WebElement checkbox = findByXpath("//md-card-title-text[contains(., '"+projectName+"')]/ancestor::md-card//md-checkbox");
-        boolean isSelected = isProjectSelected(projectName);
-
-        if (!isSelected){
-            try {
-                clickOn(checkbox);
-            }catch (WebDriverException e){
-                while(!checkbox.getAttribute("aria-checked").contains("true")) {
-                    try {
-                        new Actions(getDriver()).sendKeys(Keys.ARROW_UP).click(checkbox).build().perform();
-                    }catch (WebDriverException ee){}
-                }
-            }
-            checkbox = findByXpath("//md-card-title-text[contains(., '"+projectName+"')]/ancestor::md-card//md-checkbox");
-            isSelected = checkbox.getAttribute("aria-checked").contains("true");
-        }
-        return isSelected;
-    }
-
-    /**
-     * Unselect project in projects list, if it is selected.
-     * @param projectName String, name of project to unselect
-     * @return true if project is still selected after all
-     */
-    private boolean unSelectProject(String projectName){
-        WebElement checkbox = findByXpath("//md-card-title-text[contains(., '"+projectName+"')]/ancestor::md-card//md-checkbox");
-        boolean isSelected = isProjectSelected(projectName);
-
-        if (isSelected){
-            try{
-            clickOn(checkbox);
-            }catch (WebDriverException e){
-                while(checkbox.getAttribute("aria-checked").contains("true")) {
-                    try {
-                        new Actions(getDriver()).sendKeys(Keys.ARROW_UP).click(checkbox).build().perform();
-                    }catch(WebDriverException ee){}
-                }
-            }
-            checkbox = findByXpath("//md-card-title-text[contains(., '"+projectName+"')]/ancestor::md-card//md-checkbox");
-            isSelected = checkbox.getAttribute("aria-checked").contains("true");
-        }
-        return isSelected;
-    }
-
-    /**
-     * Checks if project selected
-     * @param projectName String, project name
-     * @return True if project is selected
-     */
-    private boolean isProjectSelected(String projectName){
-        WebElement checkbox = findByXpath("//md-card-title-text[contains(., '"+projectName+"')]/ancestor::md-card//md-checkbox");
-        return checkbox.getAttribute("aria-checked").contains("true");
-    }
 
     @DataProvider(name = "projectDetails")
     public Object[][] createProjectDetails() {

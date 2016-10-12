@@ -71,7 +71,7 @@ public class PageImporterRepository extends ModuleTest {
 
         goToProjectsList(locale);
         waitForGlobalSpinner(1, 45);
-        WebElement importProjectButton = findByXpath("//button[contains(., 'Import Project')]");
+        WebElement importProjectButton = findByXpath("//button[@ng-click='projects.importProject($event)']");
         waitForElementToStopMoving(importProjectButton);
         clickOn(importProjectButton);
         WebElement projectNameField = findByXpath("//input[@name='projectName']");
@@ -99,7 +99,7 @@ public class PageImporterRepository extends ModuleTest {
         waitForElementToDisappear(dialogueBox, 7);
         waitForElementToDisappear(importButton, 7);
         Assert.assertEquals(
-                isVisible(By.xpath("//md-card-title-text/span[contains(text(), '"+projectName+"')]"), 20),
+                isVisible(By.xpath("//md-card-title-text/span[contains(., '"+projectName+"')]"), 20),
                 true,
                 "New project name ("+projectName+")is not found in projects list.");
     }
@@ -152,34 +152,24 @@ public class PageImporterRepository extends ModuleTest {
      */
     protected int deleteAllProjects() {
         int projectsRemoved = 0;
-        List<WebElement> projectsBeforeDeletion = null;
+        List<String> projectNames = new LinkedList<String>();
 
         try {
-            projectsBeforeDeletion = createWaitDriver(2, 300).until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath("//md-card")));
-        }catch(TimeoutException e){}
+            List<WebElement> projectsBeforeDeletion = createWaitDriver(2, 300)
+                    .until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath("//md-card-title-text/span[@ng-click='projects.seeProject($index)']")));
+            for(WebElement projectTitle:projectsBeforeDeletion){
+                projectNames.add(projectTitle.getText());
+            }
+        } catch (TimeoutException e) {
+            return projectsRemoved;
+        }
 
-        if (projectsBeforeDeletion != null && projectsBeforeDeletion.size() > 0) {
-            WebElement selectAllCheckbox = findByXpath("//md-checkbox[@aria-label='Select all']/div");
-            WebElement removeSelectedBtn = findByXpath("//button[@aria-label='Remove Selected Project']");
-
-            clickOn(selectAllCheckbox);
-            waitForElementToStopMoving(removeSelectedBtn);
-            waitForElementToBeEnabled(removeSelectedBtn, 7);
-            clickOn(removeSelectedBtn);
-
-            WebElement confirmRemovalBtn = findByXpath("//button[@aria-label='Remove']");
-            waitForElementToStopMoving(confirmRemovalBtn);
-            clickOn(confirmRemovalBtn);
-            waitForElementToDisappear(confirmRemovalBtn, 10);
-            waitForGlobalSpinner(1, 45);
-
-            for (WebElement project : projectsBeforeDeletion) {
-                boolean isDeleted = waitForElementToBeInvisible(project);
-                if (isDeleted) {
-                    projectsRemoved++;
-                }
+        for(String name:projectNames){
+            if(deleteProject(name)){
+                projectsRemoved++;
             }
         }
+
         return projectsRemoved;
     }
 
@@ -190,20 +180,25 @@ public class PageImporterRepository extends ModuleTest {
      */
     protected boolean deleteProject(String projectName){
         boolean isProjectDeleted;
-        WebElement removeSelectedBtn = findByXpath("//button[@aria-label='Remove Selected Project']");
-        WebElement proectToDelete = findByXpath("//md-card-title-text[contains(., '"+projectName+"')]/ancestor::md-card");
-        WebElement checkboxToSelectProjectToDelete = findByXpath("//md-card-title-text[contains(., '"+projectName+"')]/ancestor::md-card//md-checkbox");
+        WebElement proectToDelete = findByXpath("//md-card[./*/md-card-title-text[contains(., '"+projectName+"')]]//button[@ng-click='projects.removeProject($event, p)']");
 
-        Assert.assertNotNull(checkboxToSelectProjectToDelete, "Checkbox to delete a project '"+projectName+"' not found. Does project exist?");
-        clickOn(checkboxToSelectProjectToDelete);
-        waitForElementToStopMoving(removeSelectedBtn);
-        waitForElementToBeEnabled(removeSelectedBtn, 7);
-        clickOn(removeSelectedBtn);
-        WebElement confirmRemovalBtn = findByXpath("//button[@aria-label='Remove']");
+        Assert.assertNotNull(proectToDelete, "Remove button to delete a project '"+projectName+"' not found. Does project exist?");
+        try{
+            clickOn(proectToDelete);
+        }catch (WebDriverException e){
+            while(!isVisible(By.xpath("//button[@ng-click='dialog.hide()']"), 1)) {
+                try {
+                    new Actions(getDriver()).sendKeys(Keys.ARROW_UP).click(proectToDelete).build().perform();
+                }catch(WebDriverException ee){}
+            }
+        }
+
+        WebElement confirmRemovalBtn = findByXpath("//button[@ng-click='dialog.hide()']");
+        waitForElementToStopMoving(confirmRemovalBtn);
         clickOn(confirmRemovalBtn);
         waitForElementToDisappear(confirmRemovalBtn, 10);
         waitForGlobalSpinner(1, 45);
-        isProjectDeleted = waitForElementToBeInvisible(proectToDelete);
+        isProjectDeleted = waitForElementToBeInvisible(proectToDelete, 3);
 
         return isProjectDeleted;
     }
@@ -226,11 +221,12 @@ public class PageImporterRepository extends ModuleTest {
         WebElement editProjectBtn = findByXpath("//md-card-title-text[contains(., '"+projectName+"')]/ancestor::md-card//button[@ng-click='projects.seeProject($index)']");
 
         clickOn(editProjectBtn);
+        waitForGlobalSpinner(1, 30);
         WebElement importBtn = findByXpath("//button[@ng-click='sbpc.submit()']");
         WebElement baseTemplateSelector = findByXpath("//md-select[@ng-model='sbpc.selectedPage']");
         waitForElementToStopMoving(baseTemplateSelector);
         clickOn(baseTemplateSelector);
-        WebElement baseTemplateOption = findByXpath("//md-option[contains(., '"+baseTemplatePageName+"')]");
+        WebElement baseTemplateOption = findByXpath("//md-option[./div[normalize-space(text())='"+baseTemplatePageName+"']]");
         waitForElementToBeEnabled(baseTemplateOption, 3);
         waitForElementToStopMoving(baseTemplateOption);
         clickOn(baseTemplateOption);
@@ -239,7 +235,8 @@ public class PageImporterRepository extends ModuleTest {
         waitForElementToBeInvisible(importBtn);
         waitForGlobalSpinner(2, 45);
         switchToProjectFrame();
-//        WebElement body = findByTagName("body");
+//        Uncommenting this will cause chromedriver throwing ElementNotClickable exception, for some reason. Bug??
+//        WebElement body = findByXpath("//body");
 //        waitForElementToStopMoving(body);
         switchToDefaultContent();
     }
@@ -275,9 +272,12 @@ public class PageImporterRepository extends ModuleTest {
                               String    nodeType,
                               String    propertyType){
         rightMouseClick(xPath, xOffset, yOffset);
+        WebElement menuAreaBtn = findByXpath("//div[@ng-click='rmc.showArea()']");
+        waitForElementToStopMoving(menuAreaBtn);
+        clickOn(menuAreaBtn);
         WebElement areaNameField = findByXpath("//input[@name='areaName']");
-        WebElement okButton = findByXpath("//button[@ng-click='hdc.area.ok()']");
-        WebElement ancestorSelector = findByXpath("//md-select[@ng-model='hdc.area.areaName']");
+        WebElement okButton = findByXpath("//button[@ng-click='sac.area.ok()']");
+        WebElement ancestorSelector = findByXpath("//md-select[@ng-model='sac.area.areaName']");
         WebElement assignToPropertyCheckboxToCheck = findByXpath("//md-checkbox");
         WebElement assignToPropertyCheckboxToClick = findByXpath("//md-checkbox//div[@class='md-label']");
         waitForElementToStopMoving(areaNameField);
@@ -286,7 +286,7 @@ public class PageImporterRepository extends ModuleTest {
             typeInto(areaNameField, areaName);
         }else {
             clickOn(ancestorSelector);
-            WebElement option = findByXpath("//md-option/div[text()='"+ancestorPageAreaName+"']");
+            WebElement option = findByXpath("//md-option[@value='"+ancestorPageAreaName+"']");
             waitForElementToStopMoving(option);
             clickOn(option);
             waitForElementToBeInvisible(option);
@@ -299,14 +299,14 @@ public class PageImporterRepository extends ModuleTest {
                 clickOn(assignToPropertyCheckboxToClick);
             }
             if(!nodeType.isEmpty()){
-                WebElement nodeTypeField = findByID("nodeTypeSelection-typeahead-input");
+                WebElement nodeTypeField = findByName("nodeTypeSelection");
                 typeInto(nodeTypeField, nodeType);
                 WebElement nodeTypeOption = findByXpath("//div[contains(text(), '"+nodeType+"')]");
                 waitForElementToStopMoving(nodeTypeOption);
                 clickOn(nodeTypeOption);
                 waitForElementToBeInvisible(nodeTypeOption);
                 if (!propertyType.isEmpty()) {
-                    WebElement propertyTypeSelector = findByXpath("//md-select[@ng-model='hdc.area.selectedPropertyForHtml.propertyName']");
+                    WebElement propertyTypeSelector = findByXpath("//md-select[@ng-model='sac.area.selectedPropertyForHtml.propertyName']");
                     clickOn(propertyTypeSelector);
                     WebElement propertyTypeOption = findByXpath("//md-option/div[contains(text(), '" + propertyType + "')]");
                     waitForElementToStopMoving(propertyTypeOption);
@@ -452,7 +452,10 @@ public class PageImporterRepository extends ModuleTest {
         Map<String, String> newColors = new HashMap<String, String>();
         String newColor = generateRGB();
 
+        WebElement menuBtn = findByXpath("//button[@aria-label='Settings']");
+        clickOn(menuBtn);
         WebElement adjustColorsBtn = findByXpath("//button[@ng-click='pc.setUpColors($event)']");
+        waitForElementToStopMoving(adjustColorsBtn);
         clickOn(adjustColorsBtn);
         WebElement applyBtn = findByXpath("//button[@ng-click='sdoc.apply()']");
         waitForElementToStopMoving(applyBtn);
@@ -489,7 +492,10 @@ public class PageImporterRepository extends ModuleTest {
     }
 
     protected void clearSelections(){
+        WebElement menuBtn = findByXpath("//button[@aria-label='Layout']");
+        clickOn(menuBtn);
         WebElement clearBtn = findByXpath("//button[@ng-click='pc.clearSelections($event)']");
+        waitForElementToStopMoving(clearBtn);
         clickOn(clearBtn);
         WebElement yesClearBtn = findByXpath("//button[@ng-click='dialog.hide()']");
         waitForElementToStopMoving(yesClearBtn);
@@ -525,12 +531,33 @@ public class PageImporterRepository extends ModuleTest {
         }
     }
 
+    private void deleteAllProjectsFast(){
+        String jsToDeleteProjects = " function removeAllProjects() {\n" +
+                "const trashcans = $('[aria-label=\"Remove\"]');\n" +
+                "        for (let i = 0; i < trashcans.length; ++i) {\n" +
+                "            trashcans[i].onclick = (event) => {\n" +
+                "                $('span:contains(\"Remove\")').parent('button').click();\n" +
+                "                if (trashcans[i + 1]) {\n" +
+                "                    trashcans[i + 1].click();\n" +
+                "                }\n" +
+                "            };\n" +
+                "        }\n" +
+                "        if (trashcans.length > 0) {\n" +
+                "            trashcans[0].click();   \n" +
+                "        }\n" +
+                "    }" +
+                "removeAllProjects();";
+
+        executeScriptWithJavascript(jsToDeleteProjects);
+        waitForGlobalSpinner(2, 60);
+    }
+
     /**
      * AfterClass method, deletes all projects, clean Downloads folder.
      */
     protected void customTestCleanUp(){
         goToProjectsList("en");
-        deleteAllProjects();
+        deleteAllProjectsFast();
         cleanDownloadsFolder();
     }
 }

@@ -58,12 +58,14 @@ public class ProjectSavingTest extends PageImporterRepository {
     private void goBackToProjects(){
         WebElement goBackBtn = findByXpath("//button[@ng-click='pc.backToList()']");
         clickOn(goBackBtn);
-        WebElement confirmBtn = findByXpath("//button[@ng-click='dialog.hide()']");
-        clickOn(confirmBtn);
+        waitForGlobalSpinner(2, 30);
     }
 
     private void saveProject(){
+        WebElement menuBtn = findByXpath("//button[@aria-label='Project']");
+        clickOn(menuBtn);
         WebElement saveBtn = findByXpath("//button[@ng-click='pc.saveProject()']");
+        waitForElementToStopMoving(saveBtn);
         clickOn(saveBtn);
         WebElement successToast = findByXpath("//div[contains(@class, 'toast-title')][contains(., 'Project Saved!')]");
         Assert.assertNotNull(

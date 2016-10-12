@@ -17,8 +17,8 @@ public class AreaSelectionTest extends PageImporterRepository {
     public void selectAreaTest() {
         SoftAssert softAssert = new SoftAssertWithScreenshot(getDriver(), "AreaSelectionTest.selectAreaTest");
         String projectName = randomWord(8);
-        Area area = new Area(randomWord(5), "//body/div[1]", 1, 0, "", true, "jnt:bigText", "text");
-        Area areaTwo = new Area(randomWord(5), "//body/div[2]", 1, 0, "", false, "", "");
+        Area area = new Area(randomWord(5), "//body/div[1]", 2, 0, "", true, "jnt:bigText", "text");
+        Area areaTwo = new Area(randomWord(5), "//body/div[2]", 2, 0, "", false, "", "");
 
         importProject("en", projectName, "", "AlexLevels.zip");
         openProjectFirstTime(projectName, "index.html");
@@ -34,8 +34,8 @@ public class AreaSelectionTest extends PageImporterRepository {
     public void inheritAreaTest() {
         SoftAssert softAssert = new SoftAssertWithScreenshot(getDriver(), "AreaSelectionTest.inheritAreaTest");
         String projectName = randomWord(8);
-        Area area = new Area(randomWord(5), "//body/div[1]", 1, 0, "pagecontent-side2", true, "jnt:bigText", "text");
-        Area areaTwo = new Area(randomWord(5), "//body/div[2]", 1, 0, "pagecontent", false, "", "");
+        Area area = new Area(randomWord(5), "//body/div[1]", 2, 0, "pagecontent-side2", true, "jnt:bigText", "text");
+        Area areaTwo = new Area(randomWord(5), "//body/div[2]", 2, 0, "pagecontent", false, "", "");
 
         importProject("en", projectName, "", "AlexLevels.zip");
         openProjectFirstTime(projectName, "index.html");
@@ -51,7 +51,7 @@ public class AreaSelectionTest extends PageImporterRepository {
     public void clearSelectionsTest() {
         SoftAssert softAssert = new SoftAssertWithScreenshot(getDriver(), "AreaSelectionTest.clearSelectionsTest");
         String projectName = randomWord(8);
-        Area areaTwo = new Area(randomWord(5), "//body/div[2]", 1, 0, "", false, "", "");
+        Area areaTwo = new Area(randomWord(5), "//body/div[2]", 2, 0, "", false, "", "");
 
         importProject("en", projectName, "", "AlexLevels.zip");
         openProjectFirstTime(projectName, "index.html");
@@ -66,7 +66,7 @@ public class AreaSelectionTest extends PageImporterRepository {
     public void selectionRemovalTest() {
         SoftAssert softAssert = new SoftAssertWithScreenshot(getDriver(), "AreaSelectionTest.selectionRemovalTest");
         String projectName = randomWord(8);
-        Area areaTwo = new Area(randomWord(5), "//body/div[2]", 1, 0, "", false, "", "");
+        Area areaTwo = new Area(randomWord(5), "//body/div[2]", 2, 0, "", false, "", "");
 
         importProject("en", projectName, "", "AlexLevels.zip");
         openProjectFirstTime(projectName, "index.html");
@@ -81,10 +81,10 @@ public class AreaSelectionTest extends PageImporterRepository {
 
         Assert.assertTrue(isSelected, errorMsg+". Area that you are trying to remove is not selected.");
         rightMouseClick(area.getXpath(), area.getxOffset(), area.getyOffset());
-        WebElement removeBtn = findByXpath("//button[@ng-click='hdc.area.remove()']");
-        waitForElementToStopMoving(removeBtn);
-        clickOn(removeBtn);
-        waitForElementToBeInvisible(removeBtn);
+        WebElement menuAreaBtn = findByXpath("//div[@ng-click='rmc.removable && rmc.remove()']");
+        waitForElementToStopMoving(menuAreaBtn);
+        clickOn(menuAreaBtn);
+        waitForElementToBeInvisible(menuAreaBtn);
         Assert.assertFalse(
                 checkIfAreaSelected(area.getXpath()),
                 errorMsg+". Area was not removed. XPath:'"+area.getXpath()+"'. Horizontal offset:"+area.getxOffset()+", Vertical offset:"+area.getyOffset());

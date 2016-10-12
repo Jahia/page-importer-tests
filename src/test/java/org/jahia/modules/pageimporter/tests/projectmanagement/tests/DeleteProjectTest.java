@@ -51,9 +51,9 @@ public class DeleteProjectTest extends PageImporterRepository {
 
         for(String projectName: projectsInfo.keySet()){
             softAssert.assertEquals(
-                    isVisible(By.xpath("//md-card-title-text/span[contains(text(), '"+projectName+"')]"), 1),
+                    isVisible(By.xpath("//md-card-title-text/span[contains(., '"+projectName+"')]"), 1),
                     false,
-                    "After importing several projects, cannot find name of one of them:"+ projectName);
+                    "After removing several projects, one of them is still visible:"+ projectName);
         }
         softAssert.assertEquals(projectsDeleted, projectsToImport, "Amount of imported and deleted projects does not mach");
         softAssert.assertAll();

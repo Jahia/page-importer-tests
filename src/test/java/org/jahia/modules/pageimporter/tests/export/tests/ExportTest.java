@@ -67,9 +67,15 @@ public class ExportTest extends PageImporterRepository{
 
     protected void exportSelectionsUnderSecondLevel(String   newPAgeName,
                                                    String   parentLevelOnePageName){
-        String xPathToSuccessfulToast = "//div[contains(@class, 'toast-title')][contains(., 'Export successful!')]";
+        String xPathToSuccessfulToast = "//div[contains(@class, 'toast-title')][contains(., 'Created new page!')]";
+        WebElement menuBtn = findByXpath("//button[@aria-label='Project']");
+        clickOn(menuBtn);
         WebElement exportBtn = findByXpath("//button[@ng-click='pc.copySelections()']");
+        waitForElementToStopMoving(exportBtn);
         clickOn(exportBtn);
+        WebElement continueBtn = findByXpath("//button[@ng-click=\"awc.choice('generate')\"]");
+        waitForElementToStopMoving(continueBtn);
+        clickOn(continueBtn);
         WebElement newPageNameField = findByName("newPageName");
         WebElement exportAreaSelectionsBtn = findByXpath("//button[@ng-click='csc.copySelections()']");
         WebElement grandParentExpander = findByXpath("//i[@ng-click='npc.toggle(item)' and ../span[@ng-click='npc.select(item)' and contains(., 'Home')]]");
@@ -103,9 +109,15 @@ public class ExportTest extends PageImporterRepository{
      */
     protected void exportSeletions(String   newPAgeName,
                                    String   parentPageName){
-        String xPathToSuccessfulToast = "//div[contains(@class, 'toast-title')][contains(., 'Export successful!')]";
+        String xPathToSuccessfulToast = "//div[contains(@class, 'toast-title')][contains(., 'Created new page!')]";
+        WebElement menuBtn = findByXpath("//button[@aria-label='Project']");
+        clickOn(menuBtn);
         WebElement exportBtn = findByXpath("//button[@ng-click='pc.copySelections()']");
+        waitForElementToStopMoving(exportBtn);
         clickOn(exportBtn);
+        WebElement continueBtn = findByXpath("//button[@ng-click=\"awc.choice('generate')\"]");
+        waitForElementToStopMoving(continueBtn);
+        clickOn(continueBtn);
         WebElement newPageNameField = findByName("newPageName");
         WebElement exportAreaSelectionsBtn = findByXpath("//button[@ng-click='csc.copySelections()']");
         WebElement parentPage = findByXpath("//span[@ng-click='npc.select(item)' and contains(., '"+parentPageName+"')]");
