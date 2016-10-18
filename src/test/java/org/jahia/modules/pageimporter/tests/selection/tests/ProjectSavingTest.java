@@ -18,7 +18,7 @@ public class ProjectSavingTest extends PageImporterRepository {
     public void saveProjectTest(){
         SoftAssert softAssert = new SoftAssertWithScreenshot(getDriver(), "ProjectSavingTest.saveProjectTest");
         String projectName = randomWord(8);
-        Area area = new Area(randomWord(5), "//body/div[1]", 1, 0, "", false, "", "");
+        Area area = new Area(randomWord(5), "//body/div[1]", 1, 0, false, "", "");
         String xPathToHover = "/html/body/div[4]";
         Map<String, String> expectedBorderColors;
         Map<String, Map<String, String>> actualBorderColors;

@@ -258,7 +258,6 @@ public class PageImporterRepository extends ModuleTest {
      * @param xPath, String, xPath to click on to create new area
      * @param xOffset, int, Horizontal offsen in pixels, from top left corner of element. Pass 0 to click in the middle
      * @param yOffset int, Vertical offsen in pixels, from top left corner of element. Pass 0 to click in the middle
-     * @param ancestorPageAreaName String, name of the area on ancestor page to inherit. Pass empty string to avoid feature usage.
      * @param assignHtml True to assign selected html, node type and property to the area
      * @param nodeType String, node type to assign to the area
      * @param propertyType String, propetry type, pass empty string to avoid feature usage
@@ -267,7 +266,6 @@ public class PageImporterRepository extends ModuleTest {
                               String    xPath,
                               int       xOffset,
                               int       yOffset,
-                              String    ancestorPageAreaName,
                               boolean   assignHtml,
                               String    nodeType,
                               String    propertyType){
@@ -277,34 +275,26 @@ public class PageImporterRepository extends ModuleTest {
         clickOn(menuAreaBtn);
         WebElement areaNameField = findByXpath("//input[@name='areaName']");
         WebElement okButton = findByXpath("//button[@ng-click='sac.area.ok()']");
-        WebElement ancestorSelector = findByXpath("//md-select[@ng-model='sac.area.areaName']");
         WebElement assignToPropertyCheckboxToCheck = findByXpath("//md-checkbox");
         WebElement assignToPropertyCheckboxToClick = findByXpath("//md-checkbox//div[@class='md-label']");
         waitForElementToStopMoving(areaNameField);
         //Defining area name
-        if(ancestorPageAreaName.isEmpty()){
-            typeInto(areaNameField, areaName);
-        }else {
-            clickOn(ancestorSelector);
-            WebElement option = findByXpath("//md-option[@value='"+ancestorPageAreaName+"']");
-            waitForElementToStopMoving(option);
-            clickOn(option);
-            waitForElementToBeInvisible(option);
-        }
+        typeInto(areaNameField, areaName);
 
-        if(assignHtml){
+        if (assignHtml) {
             //Ensure checkbox is on
-            if (!assignToPropertyCheckboxToCheck.getAttribute("aria-checked").equals("true")){
+            if (!assignToPropertyCheckboxToCheck.getAttribute("aria-checked").equals("true")) {
                 waitForElementToStopMoving(assignToPropertyCheckboxToClick);
                 clickOn(assignToPropertyCheckboxToClick);
             }
-            if(!nodeType.isEmpty()){
+            if (!nodeType.isEmpty()) {
                 WebElement nodeTypeField = findByName("nodeTypeSelection");
-                typeInto(nodeTypeField, nodeType);
-                WebElement nodeTypeOption = findByXpath("//div[contains(text(), '"+nodeType+"')]");
-                waitForElementToStopMoving(nodeTypeOption);
-                clickOn(nodeTypeOption);
-                waitForElementToBeInvisible(nodeTypeOption);
+                if (typeInto(nodeTypeField, nodeType)) {
+                    WebElement nodeTypeOption = findByXpath("//div[contains(text(), '" + nodeType + "')]");
+                    waitForElementToStopMoving(nodeTypeOption);
+                    clickOn(nodeTypeOption);
+                    waitForElementToBeInvisible(nodeTypeOption);
+                }
                 if (!propertyType.isEmpty()) {
                     WebElement propertyTypeSelector = findByXpath("//md-select[@ng-model='sac.area.selectedPropertyForHtml.propertyName']");
                     clickOn(propertyTypeSelector);
@@ -322,7 +312,7 @@ public class PageImporterRepository extends ModuleTest {
 
         Assert.assertTrue(
                 checkIfAreaSelected(xPath),
-                "Area was not selected. Target element does not have '"+SELECTED_AREA_MARK+"' class." + " XPath: "+xPath);
+                "Area was not selected. Target element does not have '" + SELECTED_AREA_MARK + "' class." + " XPath: " + xPath);
     }
 
     protected void selectArea(Area area){
@@ -331,7 +321,6 @@ public class PageImporterRepository extends ModuleTest {
                 area.getXpath(),
                 area.getxOffset(),
                 area.getyOffset(),
-                area.getAncestorPageAreaName(),
                 area.isHtmlAssigned(),
                 area.getNodeType(),
                 area.getPropertyType()

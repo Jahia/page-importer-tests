@@ -17,25 +17,8 @@ public class AreaSelectionTest extends PageImporterRepository {
     public void selectAreaTest() {
         SoftAssert softAssert = new SoftAssertWithScreenshot(getDriver(), "AreaSelectionTest.selectAreaTest");
         String projectName = randomWord(8);
-        Area area = new Area(randomWord(5), "//body/div[1]", 2, 0, "", true, "jnt:bigText", "text");
-        Area areaTwo = new Area(randomWord(5), "//body/div[2]", 2, 0, "", false, "", "");
-
-        importProject("en", projectName, "", "AlexLevels.zip");
-        openProjectFirstTime(projectName, "index.html");
-        selectArea(area);
-        selectArea(areaTwo);
-        checkIfAreaSelected(area.getXpath(), softAssert, true, "");
-        checkIfAreaSelected(areaTwo.getXpath(), softAssert, true, "");
-
-        softAssert.assertAll();
-    }
-
-    @Test
-    public void inheritAreaTest() {
-        SoftAssert softAssert = new SoftAssertWithScreenshot(getDriver(), "AreaSelectionTest.inheritAreaTest");
-        String projectName = randomWord(8);
-        Area area = new Area(randomWord(5), "//body/div[1]", 2, 0, "pagecontent-side2", true, "jnt:bigText", "text");
-        Area areaTwo = new Area(randomWord(5), "//body/div[2]", 2, 0, "pagecontent", false, "", "");
+        Area area = new Area(randomWord(5), "//body/div[1]", 2, 0, true, "jnt:bigText", "text");
+        Area areaTwo = new Area(randomWord(5), "//body/div[2]", 2, 0, false, "", "");
 
         importProject("en", projectName, "", "AlexLevels.zip");
         openProjectFirstTime(projectName, "index.html");
@@ -51,7 +34,7 @@ public class AreaSelectionTest extends PageImporterRepository {
     public void clearSelectionsTest() {
         SoftAssert softAssert = new SoftAssertWithScreenshot(getDriver(), "AreaSelectionTest.clearSelectionsTest");
         String projectName = randomWord(8);
-        Area areaTwo = new Area(randomWord(5), "//body/div[2]", 2, 0, "", false, "", "");
+        Area areaTwo = new Area(randomWord(5), "//body/div[2]", 2, 0, false, "", "");
 
         importProject("en", projectName, "", "AlexLevels.zip");
         openProjectFirstTime(projectName, "index.html");
@@ -66,7 +49,7 @@ public class AreaSelectionTest extends PageImporterRepository {
     public void selectionRemovalTest() {
         SoftAssert softAssert = new SoftAssertWithScreenshot(getDriver(), "AreaSelectionTest.selectionRemovalTest");
         String projectName = randomWord(8);
-        Area areaTwo = new Area(randomWord(5), "//body/div[2]", 2, 0, "", false, "", "");
+        Area areaTwo = new Area(randomWord(5), "//body/div[2]", 2, 0, false, "", "");
 
         importProject("en", projectName, "", "AlexLevels.zip");
         openProjectFirstTime(projectName, "index.html");

@@ -18,8 +18,8 @@ public class ExportTest extends PageImporterRepository{
         String projectName = randomWord(8);
         String newPageName = randomWord(9);
         String parentPageName = "Home";
-        Area area = new Area(randomWord(5), "//body/div[1]", 1, 0, "", true, "jnt:bigText", "text");
-        Area areaTwo = new Area(randomWord(5), "//body/div[2]", 1, 0, "", false, "", "");
+        Area area = new Area(randomWord(5), "//body/div[1]", 1, 0, true, "jnt:bigText", "text");
+        Area areaTwo = new Area(randomWord(5), "//body/div[2]", 1, 0, false, "", "");
 
         importProject("en", projectName, "", "AlexLevels.zip");
         openProjectFirstTime(projectName, "index.html");
@@ -35,8 +35,8 @@ public class ExportTest extends PageImporterRepository{
         String newPageName = randomWord(9);
         String anotherNewPageName = randomWord(10);
         String parentPageName = "Home";
-        Area area = new Area(randomWord(5), "//body/div[1]", 1, 0, "", true, "jnt:bigText", "text");
-        Area areaTwo = new Area(randomWord(5), "//body/div[2]", 1, 0, "", false, "", "");
+        Area area = new Area(randomWord(5), "//body/div[1]", 1, 0, true, "jnt:bigText", "text");
+        Area areaTwo = new Area(randomWord(5), "//body/div[2]", 1, 0, false, "", "");
 
         importProject("en", projectName, "", "AlexLevels.zip");
         openProjectFirstTime(projectName, "index.html");
@@ -113,6 +113,7 @@ public class ExportTest extends PageImporterRepository{
         WebElement menuBtn = findByXpath("//button[@aria-label='Project']");
         clickOn(menuBtn);
         WebElement exportBtn = findByXpath("//button[@ng-click='pc.copySelections()']");
+        waitForGlobalSpinner(1, 30);
         waitForElementToStopMoving(exportBtn);
         clickOn(exportBtn);
         WebElement continueBtn = findByXpath("//button[@ng-click=\"awc.choice('generate')\"]");

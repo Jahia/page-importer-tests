@@ -133,7 +133,7 @@ public class SelectorConfigurationTest extends PageImporterRepository {
                             SoftAssert          softAssert,
                             String              errorMsg){
         for(String xPath:xPathToSelect){
-            selectArea(new Area(randomWord(10), xPath, 0, 0, "", false, "", ""));
+            selectArea(new Area(randomWord(10), xPath, 0, 0, false, "", ""));
             checkIfAreaSelected(xPath, softAssert, true, errorMsg);
         }
         clearSelections();

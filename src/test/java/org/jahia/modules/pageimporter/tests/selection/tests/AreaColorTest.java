@@ -20,7 +20,7 @@ public class AreaColorTest extends PageImporterRepository {
     public void colorSettingsTest() {
         SoftAssert softAssert = new SoftAssertWithScreenshot(getDriver(), "AreaColorTest.colorSettingsTest");
         String projectName = randomWord(8);
-        Area area = new Area(randomWord(5), "//body/div[1]", 2, 0, "", true, "jnt:bigText", "text");
+        Area area = new Area(randomWord(5), "//body/div[1]", 2, 0, true, "jnt:bigText", "text");
         String xPathToHover = "/html/body/div[4]";
         Map<String, Map<String, String>> originalBorderColors;
         Map<String, String> expectedNewBorderColors;
@@ -80,7 +80,7 @@ public class AreaColorTest extends PageImporterRepository {
     public void areaVisibilityTest() {
         SoftAssert softAssert = new SoftAssertWithScreenshot(getDriver(), "AreaColorTest.areaVisibilityTest");
         String projectName = randomWord(8);
-        Area area = new Area(randomWord(5), "//body/div[1]", 2, 0, "", true, "jnt:bigText", "text");
+        Area area = new Area(randomWord(5), "//body/div[1]", 2, 0, true, "jnt:bigText", "text");
         String xPathToHover = "/html/body/div[4]";
         Map<String, Map<String, String>> originalBorderColors;
         Map<String, Map<String, String>> actualNewBorderColors;
