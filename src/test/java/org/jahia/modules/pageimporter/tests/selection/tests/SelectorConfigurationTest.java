@@ -38,6 +38,7 @@ public class SelectorConfigurationTest extends PageImporterRepository {
         );
         LinkedList<String> selectableAfterEnablingAll = createLinkedList(
                 "/html/body/p",
+                "/html/body/a",
                 "/html/body/div",
                 "/html/body/nav",
                 "/html/body/header",
@@ -48,7 +49,6 @@ public class SelectorConfigurationTest extends PageImporterRepository {
                 "/html/body/aside",
                 "/html/body/details",
                 "/html/body/button",
-                "/html/body/a",
                 "/html/body/h1",
                 "/html/body/h2",
                 "/html/body/h3",

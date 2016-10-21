@@ -70,7 +70,7 @@ public class ExportTest extends PageImporterRepository{
         String xPathToSuccessfulToast = "//div[contains(@class, 'toast-title')][contains(., 'Created new page!')]";
         WebElement menuBtn = findByXpath("//button[@aria-label='Project']");
         clickOn(menuBtn);
-        WebElement exportBtn = findByXpath("//button[@ng-click='pc.copySelections()']");
+        WebElement exportBtn = findByXpath("//button[@ng-click='pc.copySelections($event)']");
         waitForElementToStopMoving(exportBtn);
         clickOn(exportBtn);
         WebElement continueBtn = findByXpath("//button[@ng-click=\"awc.choice('generate')\"]");
@@ -112,7 +112,7 @@ public class ExportTest extends PageImporterRepository{
         String xPathToSuccessfulToast = "//div[contains(@class, 'toast-title')][contains(., 'Created new page!')]";
         WebElement menuBtn = findByXpath("//button[@aria-label='Project']");
         clickOn(menuBtn);
-        WebElement exportBtn = findByXpath("//button[@ng-click='pc.copySelections()']");
+        WebElement exportBtn = findByXpath("//button[@ng-click='pc.copySelections($event)']");
         waitForGlobalSpinner(1, 30);
         waitForElementToStopMoving(exportBtn);
         clickOn(exportBtn);
