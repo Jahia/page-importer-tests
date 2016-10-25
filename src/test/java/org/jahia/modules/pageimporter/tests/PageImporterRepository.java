@@ -23,6 +23,8 @@ public class PageImporterRepository extends ModuleTest {
     protected static final String SELECTED_AREA_MARK = "AreaSelection";
     protected static final String AREA_BORDER_TYPE_KEY = "borderType";
     protected static final String AREA_BORDER_COLOR_KEY = "borderColor";
+    protected static final String DEFAULT_AREA_NODE_TYPE = "jnt:bigText";
+    protected static final String DEFAULT_AREA_NODE_PROPERTY_TYPE = "text";
 
     @BeforeSuite()
     protected void createSite() {
@@ -275,34 +277,53 @@ public class PageImporterRepository extends ModuleTest {
         clickOn(menuAreaBtn);
         WebElement areaNameField = findByXpath("//input[@name='areaName']");
         WebElement okButton = findByXpath("//button[@ng-click='sac.area.ok()']");
-        WebElement assignToPropertyCheckboxToCheck = findByXpath("//md-checkbox");
-        WebElement assignToPropertyCheckboxToClick = findByXpath("//md-checkbox//div[@class='md-label']");
+        WebElement advancedButton = findByXpath("//button[@ng-click='sac.area.updateNodeTypeSelection()']");
+        WebElement assignToPropertyCheckboxToCheck;
+        WebElement assignToPropertyCheckboxToClick;
         waitForElementToStopMoving(areaNameField);
         //Defining area name
         typeInto(areaNameField, areaName);
 
         if (assignHtml) {
+            if(nodeType.equals(DEFAULT_AREA_NODE_TYPE) && propertyType.equals(DEFAULT_AREA_NODE_PROPERTY_TYPE)){
+                //Do nothing, by default area has assigned HTML, node type and property are set.
+            }else {
+                clickOn(advancedButton);
+                assignToPropertyCheckboxToCheck = findByXpath("//md-checkbox");
+                assignToPropertyCheckboxToClick = findByXpath("//md-checkbox//div[@class='md-label']");
+                //Ensure checkbox is on
+                if (!assignToPropertyCheckboxToCheck.getAttribute("aria-checked").equals("true")) {
+                    waitForElementToStopMoving(assignToPropertyCheckboxToClick);
+                    clickOn(assignToPropertyCheckboxToClick);
+                }
+                if (!nodeType.isEmpty()) {
+                    WebElement nodeTypeField = findByName("nodeTypeSelection");
+                    if (typeInto(nodeTypeField, nodeType)) {
+                        WebElement nodeTypeOption = findByXpath("//div[contains(text(), '" + nodeType + "')]");
+                        waitForElementToStopMoving(nodeTypeOption);
+                        clickOn(nodeTypeOption);
+                        waitForElementToBeInvisible(nodeTypeOption);
+                    }
+                    if (!propertyType.isEmpty()) {
+                        WebElement propertyTypeSelector = findByXpath("//md-select[@ng-model='sac.area.selectedPropertyForHtml.propertyName']");
+                        clickOn(propertyTypeSelector);
+                        WebElement propertyTypeOption = findByXpath("//md-option/div[contains(text(), '" + propertyType + "')]");
+                        waitForElementToStopMoving(propertyTypeOption);
+                        clickOn(propertyTypeOption);
+                        waitForElementToBeInvisible(propertyTypeOption);
+                    }
+                }
+            }
+        }else {
+            clickOn(advancedButton);
+            assignToPropertyCheckboxToCheck = findByXpath("//md-checkbox");
+            assignToPropertyCheckboxToClick = findByXpath("//md-checkbox//div[@class='md-label']");
             //Ensure checkbox is on
-            if (!assignToPropertyCheckboxToCheck.getAttribute("aria-checked").equals("true")) {
+            if (assignToPropertyCheckboxToCheck.getAttribute("aria-checked").equals("true")) {
                 waitForElementToStopMoving(assignToPropertyCheckboxToClick);
                 clickOn(assignToPropertyCheckboxToClick);
-            }
-            if (!nodeType.isEmpty()) {
-                WebElement nodeTypeField = findByName("nodeTypeSelection");
-                if (typeInto(nodeTypeField, nodeType)) {
-                    WebElement nodeTypeOption = findByXpath("//div[contains(text(), '" + nodeType + "')]");
-                    waitForElementToStopMoving(nodeTypeOption);
-                    clickOn(nodeTypeOption);
-                    waitForElementToBeInvisible(nodeTypeOption);
-                }
-                if (!propertyType.isEmpty()) {
-                    WebElement propertyTypeSelector = findByXpath("//md-select[@ng-model='sac.area.selectedPropertyForHtml.propertyName']");
-                    clickOn(propertyTypeSelector);
-                    WebElement propertyTypeOption = findByXpath("//md-option/div[contains(text(), '" + propertyType + "')]");
-                    waitForElementToStopMoving(propertyTypeOption);
-                    clickOn(propertyTypeOption);
-                    waitForElementToBeInvisible(propertyTypeOption);
-                }
+                Assert.assertTrue(waitForElementAttributeToContainValue(assignToPropertyCheckboxToCheck, 2, "aria-checked", "false"),
+                        "After clicking on checked checkbox 'Assign HTML', it did not become unchecked.");
             }
         }
 
