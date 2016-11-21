@@ -61,7 +61,7 @@ public class ExportTest extends PageImporterRepository{
         Assert.assertNotEquals(
                 isVisible(By.xpath("//h1[contains(., 'not found')]"), 3),
                 expectedResult,
-                pageNameToLookFor+" not found. 404 page is shown instead."
+                pageNameToLookFor+" not found. 404 page is shown instead. URL: "+urlToPageToCheck
         );
     }
 
