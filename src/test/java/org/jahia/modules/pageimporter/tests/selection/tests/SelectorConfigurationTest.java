@@ -91,7 +91,7 @@ public class SelectorConfigurationTest extends PageImporterRepository {
     }
 
     private void resetSelectability(){
-        WebElement menuBtn = findByXpath("//button[@aria-label='Settings']");
+        WebElement menuBtn = findByXpath("//i[text()='settings']/ancestor::button");
         clickOn(menuBtn);
         WebElement configureSelectorBtn = findByXpath("//button[@ng-click='pc.configureSelector($event)']");
         waitForElementToStopMoving(configureSelectorBtn);
@@ -107,7 +107,7 @@ public class SelectorConfigurationTest extends PageImporterRepository {
     }
 
     private void turnOnSelectabilityForAll(){
-        WebElement menuBtn = findByXpath("//button[@aria-label='Settings']");
+        WebElement menuBtn = findByXpath("//i[text()='settings']/ancestor::button");
         clickOn(menuBtn);
         WebElement configureSelectorBtn = findByXpath("//button[@ng-click='pc.configureSelector($event)']");
         waitForElementToStopMoving(configureSelectorBtn);

@@ -62,7 +62,7 @@ public class ProjectSavingTest extends PageImporterRepository {
     }
 
     private void saveProject(){
-        WebElement menuBtn = findByXpath("//button[@aria-label='Project']");
+        WebElement menuBtn = findByXpath("//i[text()='dvr']/ancestor::button");
         clickOn(menuBtn);
         WebElement saveBtn = findByXpath("//button[@ng-click='pc.saveProject($event)']");
         waitForElementToStopMoving(saveBtn);

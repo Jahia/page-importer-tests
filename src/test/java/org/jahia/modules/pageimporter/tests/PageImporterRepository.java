@@ -462,7 +462,7 @@ public class PageImporterRepository extends ModuleTest {
         Map<String, String> newColors = new HashMap<String, String>();
         String newColor = generateRGB();
 
-        WebElement menuBtn = findByXpath("//button[@aria-label='Settings']");
+        WebElement menuBtn = findByXpath("//i[text()='settings']/ancestor::button");
         clickOn(menuBtn);
         WebElement adjustColorsBtn = findByXpath("//button[@ng-click='pc.setUpColors($event)']");
         waitForElementToStopMoving(adjustColorsBtn);
@@ -502,7 +502,7 @@ public class PageImporterRepository extends ModuleTest {
     }
 
     protected void clearSelections(){
-        WebElement menuBtn = findByXpath("//button[@aria-label='Layout']");
+        WebElement menuBtn = findByXpath("//i[text()='view_quilt']/ancestor::button");
         clickOn(menuBtn);
         WebElement clearBtn = findByXpath("//button[@ng-click='pc.clearSelections($event)']");
         waitForElementToStopMoving(clearBtn);

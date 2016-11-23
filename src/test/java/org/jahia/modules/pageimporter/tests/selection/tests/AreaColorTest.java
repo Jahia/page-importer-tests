@@ -128,7 +128,7 @@ public class AreaColorTest extends PageImporterRepository {
     }
 
     private void resetColors() {
-        WebElement menuBtn = findByXpath("//button[@aria-label='Settings']");
+        WebElement menuBtn = findByXpath("//i[text()='settings']/ancestor::button");
         clickOn(menuBtn);
         WebElement adjustColorsBtn = findByXpath("//button[@ng-click='pc.setUpColors($event)']");
         waitForElementToStopMoving(adjustColorsBtn);
@@ -144,7 +144,7 @@ public class AreaColorTest extends PageImporterRepository {
     }
 
     private void turnOffVisibility() {
-        WebElement menuBtn = findByXpath("//button[@aria-label='Settings']");
+        WebElement menuBtn = findByXpath("//i[text()='settings']/ancestor::button");
         clickOn(menuBtn);
         WebElement adjustColorsBtn = findByXpath("//button[@ng-click='pc.setUpColors($event)']");
         waitForElementToStopMoving(adjustColorsBtn);
