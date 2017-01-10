@@ -111,7 +111,7 @@ public class PageImporterRepository extends ModuleTest {
      * @param locale Is used as part of url to projects list.
      */
     protected void goToProjectsList(String locale){
-        getDriver().get(getPath("/cms/adminframe/default/" + locale + "/sites/"+getPropertyValue("test.site.name", "page-importer-site")+".page-importer.html"));
+        getDriver().get(getPath("/cms/adminframe/default/" + locale + "/sites/"+getPropertyValue("test.site.name", "landing-page-factory-site")+".landing-page-factory.html"));
         waitForGlobalSpinner(2, 45);
     }
 
@@ -542,20 +542,25 @@ public class PageImporterRepository extends ModuleTest {
     }
 
     private void deleteAllProjectsFast(){
-        String jsToDeleteProjects = " function removeAllProjects() {\n" +
-                "const trashcans = $('[aria-label=\"Remove\"]');\n" +
-                "        for (let i = 0; i < trashcans.length; ++i) {\n" +
-                "            trashcans[i].onclick = (event) => {\n" +
-                "                $('span:contains(\"Remove\")').parent('button').click();\n" +
-                "                if (trashcans[i + 1]) {\n" +
-                "                    trashcans[i + 1].click();\n" +
-                "                }\n" +
-                "            };\n" +
-                "        }\n" +
-                "        if (trashcans.length > 0) {\n" +
-                "            trashcans[0].click();   \n" +
-                "        }\n" +
-                "    }" +
+        String jsToDeleteProjects = "function removeAllProjects() {\n" +
+                "  var trashcans = $('button[aria-label=\"Remove\"]');\n" +
+                "  var projects = []\n" +
+                "  trashcans.each(function(index, item){\n" +
+                "    item.onclick = function (event) {\n" +
+                "      var confirmRemovalButton = $('.md-confirm-button');\n" +
+                "      if (confirmRemovalButton.length > 0) {\n" +
+                "        confirmRemovalButton.click();\n" +
+                "      }\n" +
+                "      if (projects.length > 0) {\n" +
+                "        projects.pop().click();\n" +
+                "      }\n" +
+                "    };\n" +
+                "    projects.push(item);\n" +
+                "  });\n" +
+                "  if (projects.length > 0) {\n" +
+                "    projects.pop().click();\n" +
+                "  }\n" +
+                "}\n" +
                 "removeAllProjects();";
 
         executeScriptWithJavascript(jsToDeleteProjects);

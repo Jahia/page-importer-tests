@@ -34,20 +34,20 @@
         <version>7.1.0.0</version>
         <relativePath/>
     </parent>
-    <groupId>org.jahia.modules.pageimporter.tests</groupId>
-    <artifactId>page-importer-tests</artifactId>
-    <name>Jahia Selenium Tests Page Importer</name>
+    <groupId>org.jahia.modules.landingpagefactory.tests</groupId>
+    <artifactId>landing-page-factory-tests</artifactId>
+    <name>Jahia Selenium Tests for Landing Page Factory</name>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <properties>
-        <test.site.name>page-importer-site</test.site.name>
-        <test.site.modules>["page-importer"]</test.site.modules>
-        <test.site.template>sample-bootstrap-templates</test.site.template>
-        <selenium.jahia.host>www.page-importer-test.dev.org</selenium.jahia.host>
+        <test.site.name>landing-page-factory-site</test.site.name>
+        <test.site.modules>["landing-page-factory"]</test.site.modules>
+        <test.site.template>dx-base-demo-templates</test.site.template>
+        <selenium.jahia.host>www.landing-page-factory-test.dev.org</selenium.jahia.host>
         <selenium.jahia.remote>true</selenium.jahia.remote>
         <selenium.jahia.context>/qa</selenium.jahia.context>
         <!-- Name of the bundle that has to be started to launch the test -->
-        <system.jahia.bundle.mandatory>page-importer</system.jahia.bundle.mandatory>
+        <system.jahia.bundle.mandatory>landing-page-factory</system.jahia.bundle.mandatory>
     </properties>
     <profiles>
         <profile>

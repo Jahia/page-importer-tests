@@ -119,6 +119,7 @@ public class SelectorConfigurationTest extends PageImporterRepository {
         for(WebElement checkbox:categories){
             if(checkbox.getAttribute("aria-checked").contains("false")){
                 clickOn(checkbox);
+                waitForElementAttributeToContainValue(checkbox, 1, "aria-checked", "true");
             }
             Assert.assertTrue(
                     checkbox.getAttribute("aria-checked").contains("true"),
@@ -158,7 +159,7 @@ public class SelectorConfigurationTest extends PageImporterRepository {
             boolean actualResult;
             WebElement el = findByXpath(xPath);
             new Actions(getDriver()).moveToElement(el).build().perform();
-            actualResult = el.getAttribute("class").contains(SELECTABLE_HOVER_MARK);
+            actualResult = waitForElementAttributeToContainValue(el, 1, "class", SELECTABLE_HOVER_MARK);
             softAssert.assertEquals(
                     actualResult,
                     expectedResult,
